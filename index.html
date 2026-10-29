@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Happy Birthday!</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="confetti"></canvas>
+  <div class="floaters" id="floaters" aria-hidden="true"></div>
+
+  <main class="card">
+    <section id="intro" class="screen active">
+      <div class="gift" id="gift" role="button" tabindex="0" aria-label="Open your gift">🎁</div>
+      <p class="hint">Tap the gift, I made something for you</p>
+    </section>
+
+    <section id="message" class="screen">
+      <p class="small">Today is all about you</p>
+      <h1>Happy Birthday,<br><span id="name">My Love</span>!</h1>
+      <p class="letter" id="letter"></p>
+      <p class="signature" id="signature"></p>
+      <div class="buttons">
+        <button id="wishBtn" class="btn">🎂 Make a wish</button>
+        <button id="confettiBtn" class="btn ghost">🎉 More confetti</button>
+      </div>
+      <p class="wish-result" id="wishResult" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <audio id="song" src="Honeybee.mp3" loop preload="auto"></audio>
+  <button id="muteBtn" class="mute" aria-label="Mute or unmute music" hidden>🔊</button>
+
+  <script src="script.js"></script>
+</body>
+</html>

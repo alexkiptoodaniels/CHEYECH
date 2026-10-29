@@ -1,22 +1,43 @@
-// ====== EDIT THESE ======
+// ============ EDIT THESE ============
 const CONFIG = {
-  name: "My Love",           // her name, e.g. "Amina"
-  from: "Alex",              // your name
+  name: "My Love",                 // her name, e.g. "Amina"
+  from: "Alex",                    // your name
+
+  // Passcode gate: only someone who knows the answer gets in
+  gateQuestion: "What's the nickname I call you?",
+  gateAnswers: ["babe", "baby"],   // accepted answers (case doesn't matter)
+  gateHint: "Hmm, not quite. Think of something only we know 💭",
+
+  // Main letter
   message:
-    "Another year around the sun, and I'm still the luckiest person alive to be by your side.\n" +
+    "I'm sorry this is a little late, but my love for you was never late for a single day.\n" +
     "Thank you for your laughter, your kindness, and for making ordinary days feel special.\n" +
-    "I hope today is filled with everything that makes you smile.\n" +
-    "I love you more than words can say."
+    "I hope your birthday was full of everything that makes you smile, and that this year gives you even more.\n" +
+    "I love you more than words can say.",
+
+  // What she sees after she seals her wish
+  wishTitle: "Wish received 💫",
+  wishReply:
+    "Whatever you just wished for, I'm going to do everything I can to help it come true.\n" +
+    "And because you deserve to be celebrated a little longer...",
+  voucher: {
+    title: "Belated Birthday Voucher",
+    body: "Good for one date night of your choice, planned by me",
+    note: "No expiry date. Redeem anytime 💖"
+  }
 };
-// ========================
+// ====================================
 
 const $ = (id) => document.getElementById(id);
-const gift = $("gift");
-const intro = $("intro");
-const message = $("message");
 
 $("name").textContent = CONFIG.name;
 $("signature").textContent = "Forever yours, " + CONFIG.from + " ❤️";
+$("gateQuestion").textContent = CONFIG.gateQuestion;
+
+function show(id) {
+  document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
+  $(id).classList.add("active");
+}
 
 // ---------- Floating emojis ----------
 const emojis = ["💖", "🎈", "🌸", "✨", "🎀", "💕"];
@@ -104,7 +125,6 @@ function playSong() {
   song.volume = 0;
   song.play().then(() => {
     muteBtn.hidden = false;
-    // gentle fade-in
     const fade = setInterval(() => {
       song.volume = Math.min(TARGET_VOLUME, song.volume + 0.01);
       if (song.volume >= TARGET_VOLUME) clearInterval(fade);
@@ -117,10 +137,30 @@ muteBtn.addEventListener("click", () => {
   muteBtn.textContent = song.muted ? "🔇" : "🔊";
 });
 
+// ---------- Passcode gate ----------
+const normalize = (s) => s.trim().toLowerCase().replace(/\s+/g, " ");
+
+$("gateForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const answer = normalize($("gateInput").value);
+  const ok = CONFIG.gateAnswers.some((a) => normalize(a) === answer);
+  if (ok) {
+    $("gateError").textContent = "";
+    show("intro");
+  } else {
+    $("gateError").textContent = CONFIG.gateHint;
+    const form = $("gateForm");
+    form.classList.remove("shake");
+    void form.offsetWidth; // restart animation
+    form.classList.add("shake");
+    $("gateInput").select();
+  }
+});
+
 // ---------- Open gift ----------
+const gift = $("gift");
 function openGift() {
-  intro.classList.remove("active");
-  message.classList.add("active");
+  show("message");
   burst(200);
   typeText($("letter"), CONFIG.message);
   playSong();
@@ -133,13 +173,27 @@ gift.addEventListener("keydown", (e) => {
 // ---------- Buttons ----------
 $("confettiBtn").addEventListener("click", () => burst(180));
 
-const wishes = [
-  "May all your dreams come true 🌟",
-  "A year full of adventures awaits you 🌍",
-  "More laughter, more love, more cake 🍰",
-  "Your wish is safe with me 🤫💖"
-];
 $("wishBtn").addEventListener("click", () => {
-  $("wishResult").textContent = wishes[Math.floor(Math.random() * wishes.length)];
-  burst(120);
+  $("wishPanel").hidden = false;
+  $("wishBtn").hidden = true;
+  $("wishInput").focus();
+  burst(60);
+});
+
+// Wish is never stored or sent anywhere
+$("wishForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  $("wishInput").value = "";
+  $("wishPanel").hidden = true;
+
+  $("revealTitle").textContent = CONFIG.wishTitle;
+  $("revealText").textContent = CONFIG.wishReply;
+  $("voucherTitle").textContent = CONFIG.voucher.title;
+  $("voucherBody").textContent = CONFIG.voucher.body;
+  $("voucherNote").textContent = CONFIG.voucher.note;
+  $("reveal").hidden = false;
+  $("reveal").scrollIntoView({ behavior: "smooth", block: "center" });
+
+  burst(220);
+  setTimeout(() => burst(120), 500);
 });

@@ -121,18 +121,48 @@ const song = $("song");
 const muteBtn = $("muteBtn");
 const TARGET_VOLUME = 0.35; // soft; range is 0 to 1
 
-function playSong() {
-  song.volume = 0;
-  song.play().then(() => {
-    muteBtn.hidden = false;
-    const fade = setInterval(() => {
-      song.volume = Math.min(TARGET_VOLUME, song.volume + 0.01);
-      if (song.volume >= TARGET_VOLUME) clearInterval(fade);
-    }, 120);
-  }).catch(() => { /* no song.mp3 or playback blocked: page still works */ });
+let fadeTimer = null;
+
+function fadeIn() {
+  clearInterval(fadeTimer);
+  try { song.volume = 0; } catch (e) { return; } // some phones don't allow volume changes
+  fadeTimer = setInterval(() => {
+    song.volume = Math.min(TARGET_VOLUME, song.volume + 0.01);
+    if (song.volume >= TARGET_VOLUME) clearInterval(fadeTimer);
+  }, 120);
 }
 
+function playSong() {
+  muteBtn.hidden = false;
+  song.load();
+  const attempt = song.play();
+  if (attempt && attempt.then) {
+    attempt.then(() => {
+      muteBtn.textContent = "🔊";
+      fadeIn();
+    }).catch((err) => {
+      console.error("Song could not start:", err);
+      muteBtn.textContent = "🎵 Tap to play song";
+      muteBtn.classList.add("wide");
+    });
+  }
+}
+
+song.addEventListener("error", () => {
+  console.error("song.mp3 not found or not a valid mp3");
+  muteBtn.textContent = "⚠️ song.mp3 not found";
+  muteBtn.classList.add("wide");
+});
+
 muteBtn.addEventListener("click", () => {
+  if (song.paused) {
+    song.play().then(() => {
+      muteBtn.classList.remove("wide");
+      muteBtn.textContent = "🔊";
+      fadeIn();
+    }).catch(() => {});
+    return;
+  }
   song.muted = !song.muted;
   muteBtn.textContent = song.muted ? "🔇" : "🔊";
 });

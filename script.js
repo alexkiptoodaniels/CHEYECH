@@ -125,12 +125,15 @@ function tick() {
 }
 
 // ---------- Typewriter ----------
-function typeText(el, text, speed = 28) {
+function typeText(el, text, speed = 28, onDone) {
   el.textContent = "";
   let i = 0;
   const t = setInterval(() => {
     el.textContent += text[i++];
-    if (i >= text.length) clearInterval(t);
+    if (i >= text.length) {
+      clearInterval(t);
+      if (onDone) onDone();
+    }
   }, speed);
 }
 
@@ -218,7 +221,13 @@ const gift = $("gift");
 function openGift() {
   show("message");
   burst(200);
-  typeText($("letter"), CONFIG.message);
+  typeText($("letter"), CONFIG.message, 28, () => {
+    // show signature and buttons only once the letter is fully written
+    $("signature").hidden = false;
+    $("mainButtons").hidden = false;
+    $("signature").classList.add("fade-in");
+    $("mainButtons").classList.add("fade-in");
+  });
   playSong();
 }
 gift.addEventListener("click", openGift);
@@ -252,4 +261,113 @@ $("wishForm").addEventListener("submit", (e) => {
 
   burst(220);
   setTimeout(() => burst(120), 500);
+});
+
+// ---------- Download voucher as an image ----------
+function roundedRect(g, x, y, w, h, r) {
+  g.beginPath();
+  g.moveTo(x + r, y);
+  g.arcTo(x + w, y, x + w, y + h, r);
+  g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r);
+  g.arcTo(x, y, x + w, y, r);
+  g.closePath();
+}
+
+function wrapLines(g, text, maxWidth) {
+  const words = text.split(" ");
+  const lines = [];
+  let line = "";
+  words.forEach((w) => {
+    const test = line ? line + " " + w : w;
+    if (g.measureText(test).width > maxWidth && line) { lines.push(line); line = w; }
+    else line = test;
+  });
+  if (line) lines.push(line);
+  return lines;
+}
+
+async function downloadVoucher() {
+  try {
+    await document.fonts.load('70px "Dancing Script"');
+    await document.fonts.load('500 30px "Poppins"');
+  } catch (e) { /* fall back to default fonts */ }
+
+  const W = 1200, H = 700;
+  const c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const g = c.getContext("2d");
+  g.textAlign = "center";
+
+  // background
+  g.fillStyle = "#ffe3ec";
+  g.fillRect(0, 0, W, H);
+
+  // ticket body
+  g.save();
+  roundedRect(g, 40, 40, W - 80, H - 80, 36);
+  g.clip();
+  const bg = g.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, "#ffffff");
+  bg.addColorStop(1, "#fff0f5");
+  g.fillStyle = bg;
+  g.fillRect(0, 0, W, H);
+  // header band
+  g.fillStyle = "#ff5c8a";
+  g.fillRect(0, 40, W, 110);
+  g.restore();
+
+  // dashed border
+  g.setLineDash([18, 12]);
+  g.lineWidth = 4;
+  g.strokeStyle = "#ff5c8a";
+  roundedRect(g, 40, 40, W - 80, H - 80, 36);
+  g.stroke();
+  g.setLineDash([]);
+
+  // header text
+  g.fillStyle = "#ffffff";
+  g.font = '500 38px "Poppins", sans-serif';
+  g.fillText(CONFIG.voucher.title.toUpperCase(), W / 2, 112);
+
+  // main text
+  g.fillStyle = "#4a1f3d";
+  g.font = '70px "Dancing Script", cursive';
+  const lines = wrapLines(g, CONFIG.voucher.body, W - 260);
+  const lineH = 84;
+  const startY = 290 - ((lines.length - 1) * lineH) / 2 + 40;
+  lines.forEach((ln, i) => g.fillText(ln, W / 2, startY + i * lineH));
+
+  // note
+  g.fillStyle = "rgba(74, 31, 61, 0.7)";
+  g.font = '300 30px "Poppins", sans-serif';
+  g.fillText(CONFIG.voucher.note, W / 2, 500);
+
+  // from / to
+  g.fillStyle = "#ff5c8a";
+  g.font = '56px "Dancing Script", cursive';
+  g.fillText("For " + CONFIG.name + ", with love from " + CONFIG.from, W / 2, 590);
+
+  // hearts in the corners
+  g.font = "44px sans-serif";
+  g.fillText("❤️", 110, 230);
+  g.fillText("❤️", W - 110, 230);
+  g.fillText("💖", 110, H - 110);
+  g.fillText("💖", W - 110, H - 110);
+
+  c.toBlob((blob) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "belated-birthday-voucher.png";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }, "image/png");
+}
+
+$("downloadBtn").addEventListener("click", () => {
+  downloadVoucher();
+  burst(80);
 });

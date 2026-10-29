@@ -38,9 +38,9 @@
       <p class="small">Better late than never</p>
       <h1>Happy Belated Birthday,<br><span id="name">My Love</span>!</h1>
       <p class="letter" id="letter"></p>
-      <p class="signature" id="signature"></p>
+      <p class="signature" id="signature" hidden></p>
 
-      <div class="buttons" id="mainButtons">
+      <div class="buttons" id="mainButtons" hidden>
         <button id="wishBtn" class="btn">🎂 Make a wish</button>
         <button id="confettiBtn" class="btn ghost">🎉 More confetti</button>
       </div>
@@ -63,12 +63,13 @@
           <div class="voucher-body" id="voucherBody"></div>
           <div class="voucher-foot" id="voucherNote"></div>
         </div>
+        <button id="downloadBtn" class="btn download-btn" type="button">⬇️ Download my voucher</button>
       </div>
     </section>
 
   </main>
 
-  <audio id="song" src="Honeybee.mp3" loop preload="auto"></audio>
+  <audio id="song" src="song.mp3" loop preload="auto"></audio>
   <button id="muteBtn" class="mute" aria-label="Mute or unmute music" hidden>🔊</button>
 
   <script src="script.js"></script>

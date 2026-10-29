@@ -54,6 +54,24 @@ function spawnFloater() {
 }
 setInterval(spawnFloater, 700);
 
+// ---------- Flying hearts ----------
+const hearts = ["❤️", "💗", "💖", "💕", "💘", "🩷"];
+function spawnHeart() {
+  const el = document.createElement("span");
+  el.className = "heart";
+  el.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+  el.style.left = Math.random() * 100 + "vw";
+  el.style.fontSize = 16 + Math.random() * 34 + "px";
+  el.style.setProperty("--drift", (Math.random() * 160 - 80) + "px");
+  const dur = 6 + Math.random() * 7;
+  el.style.animationDuration = dur + "s";
+  $("floaters").appendChild(el);
+  setTimeout(() => el.remove(), dur * 1000);
+}
+setInterval(spawnHeart, 280);
+// a few hearts already on screen at the start
+for (let i = 0; i < 8; i++) setTimeout(spawnHeart, i * 150);
+
 // ---------- Confetti ----------
 const canvas = $("confetti");
 const ctx = canvas.getContext("2d");
@@ -144,6 +162,7 @@ function playSong() {
       console.error("Song could not start:", err);
       muteBtn.textContent = "🎵 Tap to play song";
       muteBtn.classList.add("wide");
+      muteBtn.dataset.err = err && err.name ? err.name : "unknown";
     });
   }
 }
@@ -160,7 +179,14 @@ muteBtn.addEventListener("click", () => {
       muteBtn.classList.remove("wide");
       muteBtn.textContent = "🔊";
       fadeIn();
-    }).catch(() => {});
+    }).catch((err) => {
+      const name = err && err.name ? err.name : "unknown";
+      muteBtn.classList.add("wide");
+      muteBtn.textContent =
+        name === "NotSupportedError"
+          ? "⚠️ Can't read song.mp3 (missing or wrong format)"
+          : "⚠️ Song error: " + name;
+    });
     return;
   }
   song.muted = !song.muted;

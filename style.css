@@ -46,6 +46,21 @@ body {
   to { transform: translateY(-115vh) rotate(25deg); opacity: 0; }
 }
 
+.heart {
+  position: absolute;
+  bottom: -50px;
+  opacity: 0;
+  filter: drop-shadow(0 4px 6px rgba(255, 92, 138, 0.3));
+  animation: heartFloat ease-in-out forwards;
+}
+@keyframes heartFloat {
+  0%   { transform: translate(0, 0) scale(0.6) rotate(-10deg); opacity: 0; }
+  10%  { opacity: 0.9; }
+  50%  { transform: translate(var(--drift), -55vh) scale(1) rotate(10deg); }
+  90%  { opacity: 0.8; }
+  100% { transform: translate(calc(var(--drift) * -0.6), -115vh) scale(1.1) rotate(-8deg); opacity: 0; }
+}
+
 .card {
   position: relative;
   z-index: 1;
